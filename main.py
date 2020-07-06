@@ -18,8 +18,8 @@ from sklearn.ensemble import RandomForestClassifier
 
 
 def read_data():
-    data_train = pd.read_csv('../Datasets/drugsComTrain_raw.tsv', sep='\t')
-    data_test = pd.read_csv('../Datasets/drugsComTest_raw.tsv', sep='\t')
+    data_train = pd.read_csv('drugsComTrain_raw.tsv', sep='\t')
+    data_test = pd.read_csv('drugsComTest_raw.tsv', sep='\t')
 
     return data_train, data_test
 
@@ -83,14 +83,18 @@ def tknizer(text):
 def cv(max_features=5000,stop_words=stopwords.words("english"),tokenizer=tknizer):
     try:
         cv_train=pickle.load(open('cv_train.pkl','rb'))
+        print('cv_train loaded.')
         cv_test=pickle.load(open('cv_test.pkl','rb'))
+        print('cv_test loaded')
     except:
         cv=CountVectorizer(max_features=max_features,stop_words=stop_words,tokenizer=tokenizer)
 
         cv_train=cv.fit_transform(train_df.review)
-        print('cv_train done.')
+        pickle.dump(cv_train,open('cv_train.pkl','wb'))
+        print('cv_train saved')
         cv_test=cv.transform(test_df.review)
-        print('cv_test done.')
+        pickle.dump(cv_test,open('cv_test.pkl','wb'))
+        print('cv_test saved')
 
     return cv_train,cv_test
 
@@ -116,7 +120,7 @@ if __name__ == "__main__":
     parser.add_argument('--min_samples_leaf', type=int)
     args = parser.parse_args()
 
-    RFmodel = RandomForestClassifier(criterion="entropy",n_estimators=args.n_estimators, max_depth=args.max_depth, min_samples_leaf=args.min_samples_leaf,random_state=0, verbose=1, n_jobs=-1)
+    RFmodel = RandomForestClassifier(criterion="gini",n_estimators=args.n_estimators, max_depth=args.max_depth, min_samples_leaf=args.min_samples_leaf,random_state=0, verbose=1, n_jobs=-1)
     print(RFmodel.get_params())
 
     RFmodel.fit(cv_train, train_df.condcopy)
